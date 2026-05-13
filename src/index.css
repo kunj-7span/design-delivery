@@ -132,3 +132,9 @@
     @apply font-sans;
     }
 }
+
+@theme {
+  --color-primary: #8200db;
+  /* --color-gray: #f4f5ff; */
+  /* --color-hover-primary: #5a54d4; */
+}
