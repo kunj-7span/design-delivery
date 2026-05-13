@@ -1,11 +1,8 @@
-import { Button } from "@/components/ui/button"
 function App() {
 
   return (
     <>
-      <h1 className="text-3xl font-bold underline">Design Delivery</h1>
-      <Button>Button</Button>
-      <h2>testing</h2>
+      <h1 className="flex items-center justify-center w-screen h-screen text-blue-500 text-4xl">Design Delivery</h1>
     </>
   )
 }
