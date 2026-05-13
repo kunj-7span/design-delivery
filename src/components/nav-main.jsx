@@ -29,7 +29,7 @@ export function NavMain({ items }) {
                 >
                   <NavLink
                     to={item.url}
-                    className="flex w-full items-center gap-2"
+                    className={`flex w-full items-center gap-2 `}
                   >
                     {item.icon}
                     <span>{item.title}</span>

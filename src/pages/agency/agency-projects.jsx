@@ -1,8 +1,8 @@
 function AgencyProjects() {
     return (
-        <div>
-            <h1>Agency Employees</h1>
-        </div>
+      <div>
+        <h2 className="text-xl font-medium">Projects</h2>
+      </div>
     );
 }
 

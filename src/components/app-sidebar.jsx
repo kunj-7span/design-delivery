@@ -13,7 +13,7 @@ import {
 import {
   LayoutDashboard,
   IdCardLanyard,
-  User,
+  UserRound,
   SquareChartGantt,
 } from "lucide-react";
 
@@ -38,7 +38,7 @@ const data = {
     {
       title: "Clients",
       url: "/clients",
-      icon: <User />,
+      icon: <UserRound />,
     },
     {
       title: "Projects",
