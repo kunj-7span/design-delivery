@@ -68,7 +68,7 @@ function ClientList() {
   };
 
   const onEditUser = (row) => {
-    navigate(`/clients/edit/${row.id}`);
+    navigate(`/agency/clients/edit/${row.id}`);
   };
 
   return (
@@ -93,7 +93,7 @@ function ClientList() {
               </InputGroupAddon>
             </InputGroup>
             <Button asChild>
-              <Link to="/clients/create" className="flex items-center gap-1">
+              <Link to="/agency/clients/create" className="flex items-center gap-1">
                 <Plus /> Create new
               </Link>
             </Button>

@@ -27,22 +27,22 @@ const data = {
   navMain: [
     {
       title: "Dashboard",
-      url: "/agency-dashboard",
+      url: "/agency",
       icon: <LayoutDashboard />,
     },
     {
       title: "Employees",
-      url: "/employees",
+      url: "/agency/employees",
       icon: <IdCardLanyard />,
     },
     {
       title: "Clients",
-      url: "/clients",
+      url: "/agency/clients",
       icon: <UserRound />,
     },
     {
       title: "Projects",
-      url: "/projects",
+      url: "/agency/projects",
       icon: <SquareChartGantt />,
     },
   ],

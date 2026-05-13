@@ -54,7 +54,8 @@ const ClientItem = () => {
 
     const loadUser = async () => {
       try {
-        setLoadingUser(t = await fetchUserById(id);
+        setLoadingUser(true);
+        const user = await fetchUserById(id);
         form.reset({
           name: user.name,
           email: user.email,
