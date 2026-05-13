@@ -15,6 +15,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
 const formSchema = z.object({
     email: z
@@ -25,11 +26,6 @@ const formSchema = z.object({
     password: z
         .string()
         .min(1, { message: "Password is required" })
-        .min(8, { message: "Password must be at least 8 characters long" })
-        .regex(/[A-Z]/, {
-            message: "Password must contain at least one uppercase letter",
-        })
-        .regex(/[0-9]/, { message: "Password must contain at least one number" }),
 });
 
 const LoginForm = () => {
@@ -86,9 +82,17 @@ const LoginForm = () => {
                     control={form.control}
                     render={({ field, fieldState }) => (
                         <Field data-invalid={fieldState.invalid}>
-                            <FieldLabel htmlFor="form-login-password">
+                            <div className="flex items-center">                           <FieldLabel htmlFor="form-login-password">
                                 Password
                             </FieldLabel>
+                                <Link
+                                    to="/forgot-password"
+                                    className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
+                                >
+                                    Forgot your password?
+                                </Link>
+                            </div>
+
                             <InputGroup>
                                 <InputGroupInput
                                     {...field}
@@ -125,6 +129,7 @@ const LoginForm = () => {
                 Sign in
             </Button>
 
+            <p className="text-center">Don't have an account? <Link to="/register" className="cursor-pointer text-primary font-medium hover:text-primary/90 transition-colors duration-300 hover:underline underline-offset-2">register</Link></p>
         </form>
     );
 };

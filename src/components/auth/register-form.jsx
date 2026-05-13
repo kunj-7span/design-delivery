@@ -15,6 +15,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
 import { Mail, Lock, Eye, EyeOff, User } from "lucide-react";
 import { useState } from "react";
+import { Link } from "react-router-dom";
+// import axios from "axios";
+import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 const formSchema = z.object({
     name: z.string().min(3, { message: "Name must be at least 3 characters long" }),
@@ -28,6 +32,9 @@ const formSchema = z.object({
         .string()
         .min(1, { message: "Password is required" })
         .min(8, { message: "Password must be at least 8 characters long" })
+        .regex(/[a-z]/, {
+            message: "Password must contain at least one lowercase letter",
+        })
         .regex(/[A-Z]/, {
             message: "Password must contain at least one uppercase letter",
         })
@@ -36,15 +43,17 @@ const formSchema = z.object({
     confirmPassword: z.string().min(1, { message: "Confirm Password is required" }),
 
 }).refine((data) => data.password === data.confirmPassword, {
-    message: "Password do not match",
+    message: "Password and confirm password do not match",
     path: ["confirmPassword"],
 })
 
 const RegisterForm = () => {
 
-    const [showPassword, setShowPassword] = useState(false)
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setConfirmPassword] = useState(false);
     const form = useForm({
         resolver: zodResolver(formSchema),
+        mode: "onChange",
         defaultValues: {
             name: "",
             email: "",
@@ -53,8 +62,24 @@ const RegisterForm = () => {
         },
     });
 
-    function onSubmit(data) {
-        console.log(data);
+    const navigate = useNavigate();
+
+    const onSubmit = async (data) => {
+        try {
+            // const res = await axios.post("http://localhost:5000/api/auth/register", data);
+            console.log("data", data);
+            toast.success("Registration successful");
+
+            navigate("/verify-otp-form", {
+                state: {
+                    email: data.email,
+                },
+            });
+
+        } catch (error) {
+            // toast.error(error.response.data.message);
+            console.log(error);
+        }
     }
 
     return (
@@ -171,17 +196,17 @@ const RegisterForm = () => {
                                     aria-invalid={fieldState.invalid}
                                     placeholder="Enter Confirm Password"
                                     autoComplete="off"
-                                    type={showPassword ? "text" : "password"}
+                                    type={showConfirmPassword ? "text" : "password"}
                                 />
                                 <InputGroupAddon>
                                     <Lock />
                                 </InputGroupAddon>
                                 <InputGroupAddon
-                                    onClick={() => setShowPassword((prev) => !prev)}
+                                    onClick={() => setConfirmPassword((prev) => !prev)}
                                     className="cursor-pointer"
                                     align="inline-end"
                                 >
-                                    {showPassword ? (
+                                    {showConfirmPassword ? (
                                         <EyeOff size={18} />
                                     ) : (
                                         <Eye size={18} />
@@ -196,10 +221,11 @@ const RegisterForm = () => {
                 />
             </FieldGroup>
 
-            <Button className="w-full mt-3" type="submit" size="lg">
-                Sign in
+            <Button className="w-full mt-3" type="submit" size="lg" >
+                Register
             </Button>
 
+            <p className="text-center">Already have an account? <Link to="/" className="cursor-pointer text-primary font-medium hover:text-primary/90 transition-colors duration-300 hover:underline underline-offset-2">Sign in</Link></p>
         </form>
     );
 };
