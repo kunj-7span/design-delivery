@@ -1,4 +1,4 @@
-import Divider from "@/components/divider";
+import Divider from "@/components/clients/divider";
 
 function App() {
   return (
