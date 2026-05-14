@@ -10,22 +10,16 @@ import {
     FieldGroup,
     FieldLabel,
 } from "@/components/ui/field";
-import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
 import { ArrowLeft, Mail } from "lucide-react";
 import { Link } from "react-router-dom";
-
-const formSchema = z.object({
-    email: z
-        .string()
-        .min(1, { message: "Email is required" })
-        .email({ message: "Invalid email address" }),
-});
+import { forgotPasswordSchema } from "@/schema/auth-schema";
 
 const ForgotPasswordForm = () => {
+
     const form = useForm({
-        resolver: zodResolver(formSchema),
+        resolver: zodResolver(forgotPasswordSchema),
         defaultValues: {
             email: "",
         },
@@ -33,12 +27,11 @@ const ForgotPasswordForm = () => {
 
     function onSubmit(data) {
         console.log(data);
-
     }
 
     return (
         <form
-            id="form-login"
+            id="form-forgot-password"
             className="grid gap-4"
             onSubmit={form.handleSubmit(onSubmit)}
         >
@@ -48,14 +41,14 @@ const ForgotPasswordForm = () => {
                     control={form.control}
                     render={({ field, fieldState }) => (
                         <Field data-invalid={fieldState.invalid}>
-                            <FieldLabel htmlFor="form-login-email">Email</FieldLabel>
+                            <FieldLabel htmlFor="form-forgot-password-email">Email</FieldLabel>
                             <InputGroup>
                                 <InputGroupInput
                                     {...field}
-                                    id="form-login-email"
+                                    id="form-forgot-password-email"
                                     aria-invalid={fieldState.invalid}
                                     placeholder="Enter email"
-                                    autoComplete="off"
+                                    autoComplete="email"
                                     type="email"
                                 />
                                 <InputGroupAddon>

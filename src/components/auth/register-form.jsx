@@ -10,49 +10,26 @@ import {
     FieldGroup,
     FieldLabel,
 } from "@/components/ui/field";
-import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
-import { Mail, Lock, Eye, EyeOff, User } from "lucide-react";
-import { useState } from "react";
+import { Mail, Lock, Eye, EyeOff, User, Camera, X } from "lucide-react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 // import axios from "axios";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-
-const formSchema = z.object({
-    name: z.string().min(3, { message: "Name must be at least 3 characters long" }),
-
-    email: z
-        .string()
-        .min(1, { message: "Email is required" })
-        .email({ message: "Invalid email address" }),
-
-    password: z
-        .string()
-        .min(1, { message: "Password is required" })
-        .min(8, { message: "Password must be at least 8 characters long" })
-        .regex(/[a-z]/, {
-            message: "Password must contain at least one lowercase letter",
-        })
-        .regex(/[A-Z]/, {
-            message: "Password must contain at least one uppercase letter",
-        })
-        .regex(/[0-9]/, { message: "Password must contain at least one number" }),
-
-    confirmPassword: z.string().min(1, { message: "Confirm Password is required" }),
-
-}).refine((data) => data.password === data.confirmPassword, {
-    message: "Password and confirm password do not match",
-    path: ["confirmPassword"],
-})
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { registerSchema } from "@/schema/auth-schema";
 
 const RegisterForm = () => {
 
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setConfirmPassword] = useState(false);
+    const [preview, setPreview] = useState("");
+    const [avatarFile, setAvatarFile] = useState(null);
+
     const form = useForm({
-        resolver: zodResolver(formSchema),
+        resolver: zodResolver(registerSchema),
         mode: "onChange",
         defaultValues: {
             name: "",
@@ -64,18 +41,71 @@ const RegisterForm = () => {
 
     const navigate = useNavigate();
 
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+
+        if (!file) return;
+
+        const allowedTypes = ["image/jpeg", "image/png", "image/jpg"];
+
+        if (!allowedTypes.includes(file.type)) {
+            toast.error("Invalid file type. Only PNG, and  JPG are allowed.");
+            return;
+        }
+
+        const maxSize = 2 * 1024 * 1024;
+
+        if (file.size > maxSize) {
+            toast.error(`File size must be less than 2MB.`);
+            return;
+        }
+
+        setAvatarFile(file);
+
+        const imageUrl =
+            URL.createObjectURL(file);
+
+        setPreview(imageUrl);
+    }
+
+
+    useEffect(() => {
+        return () => {
+            if (preview) {
+                URL.revokeObjectURL(preview);
+            }
+        }
+    }, [preview]);
+
+
+    const handleRemoveAvatar = () => {
+        if (preview) URL.revokeObjectURL(preview);
+        setPreview("");
+        setAvatarFile(null);
+    }
+
     const onSubmit = async (data) => {
         try {
-            // const res = await axios.post("http://localhost:5000/api/auth/register", data);
-            console.log("data", data);
+            const formData = new FormData();
+
+            formData.append("name", data.name);
+            formData.append("email", data.email);
+            formData.append("password", data.password);
+            formData.append("confirmPassword", data.confirmPassword);
+
+            if (avatarFile) {
+                formData.append("avatar", avatarFile);
+            }
+
+            // const res = await axios.post("http://localhost:5000/api/auth/register", formData);
+            console.log("data", formData);
             toast.success("Registration successful");
 
-            navigate("/verify-otp-form", {
+            navigate("/verify-otp", {
                 state: {
                     email: data.email,
                 },
             });
-
         } catch (error) {
             // toast.error(error.response.data.message);
             console.log(error);
@@ -84,10 +114,40 @@ const RegisterForm = () => {
 
     return (
         <form
-            id="form-login"
+            id="form-register"
             className="grid gap-4"
             onSubmit={form.handleSubmit(onSubmit)}
         >
+
+            <div className="relative mx-auto flex">
+                <label className="cursor-pointer flex">
+                    <Avatar className="h-20 w-20 border-2 border-dashed border-primary">
+
+                        <AvatarImage src={preview} className="p-1" />
+
+                        <AvatarFallback>
+                            <Camera size={28} className="text-primary" />
+                        </AvatarFallback>
+
+                    </Avatar>
+                    <input
+                        key={preview ? "has-avatar" : "no-avatar"}
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleImageChange}
+                    />
+                </label>
+                {preview && (
+                    <button
+                        type="button"
+                        className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors flex items-center justify-center h-6 w-6"
+                        onClick={handleRemoveAvatar}
+                    >
+                        <X size={14} />
+                    </button>
+                )}
+            </div>
             <FieldGroup>
 
                 <Controller
@@ -95,14 +155,14 @@ const RegisterForm = () => {
                     control={form.control}
                     render={({ field, fieldState }) => (
                         <Field data-invalid={fieldState.invalid}>
-                            <FieldLabel htmlFor="form-login-name">Name</FieldLabel>
+                            <FieldLabel htmlFor="form-register-name">Name</FieldLabel>
                             <InputGroup>
                                 <InputGroupInput
                                     {...field}
-                                    id="form-login-name"
+                                    id="form-register-name"
                                     aria-invalid={fieldState.invalid}
                                     placeholder="Enter your name"
-                                    autoComplete="off"
+                                    autoComplete="name"
                                     type="text"
                                 />
                                 <InputGroupAddon>
@@ -121,14 +181,14 @@ const RegisterForm = () => {
                     control={form.control}
                     render={({ field, fieldState }) => (
                         <Field data-invalid={fieldState.invalid}>
-                            <FieldLabel htmlFor="form-login-email">Email</FieldLabel>
+                            <FieldLabel htmlFor="form-register-email">Email</FieldLabel>
                             <InputGroup>
                                 <InputGroupInput
                                     {...field}
-                                    id="form-login-email"
+                                    id="form-register-email"
                                     aria-invalid={fieldState.invalid}
                                     placeholder="Enter email"
-                                    autoComplete="off"
+                                    autoComplete="email"
                                     type="email"
                                 />
                                 <InputGroupAddon>
@@ -147,16 +207,16 @@ const RegisterForm = () => {
                     control={form.control}
                     render={({ field, fieldState }) => (
                         <Field data-invalid={fieldState.invalid}>
-                            <FieldLabel htmlFor="form-login-password">
+                            <FieldLabel htmlFor="form-register-password">
                                 Password
                             </FieldLabel>
                             <InputGroup>
                                 <InputGroupInput
                                     {...field}
-                                    id="form-login-password"
+                                    id="form-register-password"
                                     aria-invalid={fieldState.invalid}
                                     placeholder="Enter Password"
-                                    autoComplete="off"
+                                    autoComplete="new-password"
                                     type={showPassword ? "text" : "password"}
                                 />
                                 <InputGroupAddon>
@@ -186,16 +246,16 @@ const RegisterForm = () => {
                     control={form.control}
                     render={({ field, fieldState }) => (
                         <Field data-invalid={fieldState.invalid}>
-                            <FieldLabel htmlFor="form-login-confirm-password">
+                            <FieldLabel htmlFor="form-register-confirm-password">
                                 Confirm Password
                             </FieldLabel>
                             <InputGroup>
                                 <InputGroupInput
                                     {...field}
-                                    id="form-login-confirm-password"
+                                    id="form-register-confirm-password"
                                     aria-invalid={fieldState.invalid}
                                     placeholder="Enter Confirm Password"
-                                    autoComplete="off"
+                                    autoComplete="new-password"
                                     type={showConfirmPassword ? "text" : "password"}
                                 />
                                 <InputGroupAddon>
