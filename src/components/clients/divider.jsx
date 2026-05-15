@@ -2,17 +2,10 @@ import { useState, version } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const TopNav = () => (
-  <div className="flex justify-between items-center px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200 bg-white">
+  <div className="flex justify-between items-center px-4 sm:px-6 py-3 sm:py-2 border-b border-gray-200 bg-white">
     <div className="flex items-center gap-2 sm:gap-3">
       <div className="w-7 sm:w-8 h-7 sm:h-8 flex items-center justify-center bg-green-600 text-white rounded font-bold text-xs sm:text-sm">
         DD
@@ -28,7 +21,7 @@ const Version = () => (
   <div className="mb-4 sm:mb-6">
     <div className="text-xs text-gray-600 font-medium mb-2">Version</div>
     <Button className="px-2 sm:px-3 py-1  bg-gray-500 hover:bg-gray-600 text-sm rounded-sm">
-      v2 · latest
+      v {Version} · latest
     </Button>
   </div>
 );
@@ -39,12 +32,8 @@ const ViewerHeader = ({ title, folder, date }) => (
       {title}
     </h1>
     <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 text-xs text-gray-600">
-      <span className="flex items-center gap-1">
-        <i className="ti ti-folder" aria-hidden="true"></i> {folder}
-      </span>
-      <span className="flex items-center gap-1">
-        <i className="ti ti-calendar" aria-hidden="true"></i> Shared {date}
-      </span>
+      <span className="flex items-center gap-1">{folder}</span>
+      <span className="flex items-center gap-1">Created {date}</span>
     </div>
   </div>
 );
@@ -79,6 +68,10 @@ const ViewerControls = ({ imageUrl, fileName }) => {
 
       if (newTab) {
         newTab.location.href = blobUrl;
+
+        newTab.onload = () => {
+          URL.revokeObjectURL(blobUrl);
+        };
       }
     } catch (error) {
       console.error("Failed to open image:", error);
@@ -89,16 +82,6 @@ const ViewerControls = ({ imageUrl, fileName }) => {
     }
   };
 
-  // const handleDownload = () => {
-  //   if (imageUrl) {
-  //     const link = document.createElement("a");
-  //     link.href = imageUrl;
-  //     link.download = fileName || "download";
-  //     document.body.appendChild(link);
-  //     link.click();
-  //     document.body.removeChild(link);
-  //   }
-  // };
   const handleDownload = async () => {
     if (!imageUrl) return;
 
@@ -140,12 +123,7 @@ const ViewerControls = ({ imageUrl, fileName }) => {
   );
 };
 
-const ViewerSection = ({
-  activeVersion,
-  onVersionChange,
-  imageUrl,
-  fileName,
-}) => (
+const ViewerSection = ({ imageUrl, fileName }) => (
   <>
     <div className="flex-1 p-4 sm:p-6 border-b sm:border-b-0 sm:border-r border-gray-200 overflow-y-auto">
       <div className="sm:flex items-start sm:items-start justify-between ">
@@ -157,10 +135,7 @@ const ViewerSection = ({
           />
         </div>
         <div className="w-full sm:w-auto">
-          <Version
-            activeVersion={activeVersion}
-            onVersionChange={onVersionChange}
-          />
+          <Version />
         </div>
       </div>
       <FileViewer imageUrl={imageUrl} fileName={fileName} />
@@ -226,6 +201,7 @@ const CommentSection = ({
 
   const handleKeyPress = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
       handleSendComment();
     }
   };
@@ -274,22 +250,20 @@ const ApprovCard = () => (
     <div className="flex flex-col items-center gap-8 max-w-md">
       <Card className="w-full hover:shadow-xl bg-gray-50 border-gray-300">
         <CardHeader>
-          <div className="relative w-20 h-20 sm:w-40 sm:h-40 mx-auto">
-            <div className="absolute inset-0 rounded-full bg-linear-to-br from-green-100 to-green-50 flex items-center justify-center">
-              <svg
-                className="w-20 h-20 sm:w-20 sm:h-20 text-green-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={3}
-                  d="M5 13l4 4L19 7"
-                />
-              </svg>
-            </div>
+          <div className="w-24 h-24 mx-auto rounded-full bg-linear-to-br from-green-100 to-green-50 flex items-center justify-center">
+            <svg
+              className="w-20 h-20 sm:w-20 sm:h-20 text-green-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={3}
+                d="M5 13l4 4L19 7"
+              />
+            </svg>
           </div>
           <div className="text-center">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
@@ -334,9 +308,26 @@ const RevisionCard = () => (
     <div className="flex flex-col items-center gap-8 max-w-md">
       <Card className="w-full hover:shadow-xl bg-gray-50 border-gray-300">
         <CardHeader>
-          <div className="relative w-20 h-20 sm:w-40 sm:h-40 mx-auto">
-            <div className="absolute inset-0 rounded-full bg-linear-to-br from-red-100 to-red-50 flex items-center justify-center">
-              <svg
+          <div className="w-24 h-24 mx-auto rounded-full bg-linear-to-br from-red-100 to-red-50 flex items-center justify-center">
+            <svg
+              className="w-20 h-20 text-red-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                cx="12"
+                cy="12"
+                // r="9"
+                strokeWidth="2"
+                strokeDasharray="3 2"
+              />
+
+              <path strokeLinecap="round" strokeWidth="2.5" d="M12 7v6" />
+
+              <circle cx="12" cy="17" r="1" fill="currentColor" />
+            </svg>
+            {/* <svg
                 className="w-20 h-20 sm:w-20 sm:h-20 text-red-600"
                 fill="none"
                 stroke="currentColor"
@@ -348,8 +339,7 @@ const RevisionCard = () => (
                   strokeWidth={3}
                   d="M6 18L18 6M6 6l12 12"
                 />
-              </svg>
-            </div>
+              </svg> */}
           </div>
           <div className="text-center">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
@@ -435,17 +425,13 @@ export default function Divider() {
   };
 
   const handleApprove = () => {
-    setIsApproved(!isApproved);
-    if (!isApproved && isRequested) {
-      setIsRequested(false);
-    }
+    setIsApproved(true);
+    setIsRequested(false);
   };
 
   const handleRequestRevision = () => {
-    setIsRequested(!isRequested);
-    if (!isRequested && isApproved) {
-      setIsApproved(false);
-    }
+    setIsRequested(true);
+    setIsApproved(false);
   };
 
   const handleAddComment = (commentText) => {
@@ -461,7 +447,7 @@ export default function Divider() {
       time: timeString,
     };
 
-    setComments([newComment, ...comments]);
+    setComments([newComment]);
   };
 
   const handleCommentSubmitted = () => {
@@ -470,7 +456,7 @@ export default function Divider() {
 
   if (isCommentSubmitted) {
     return (
-      <div className="flex flex-col h-screen bg-gray-900">
+      <div className="flex flex-col bg-white">
         <TopNav />
         <div className="flex">
           {isApproved ? <ApprovCard /> : <RevisionCard />}
