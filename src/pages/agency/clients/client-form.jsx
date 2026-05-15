@@ -21,16 +21,18 @@ import {
 import { toast } from "sonner";
 import { Controller, useForm } from "react-hook-form";
 import { Mail, UserRound, UserRoundPlus, Phone } from "lucide-react";
-import { clientFormSchema } from "../../../schema/agency-schema";
+import { clientFormSchema } from "../../../schema/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { fetchUserById } from "./userApi";
+import {AsYouType} from 'libphonenumber-js'
 
-const ClientItem = () => {
+const ClientForm = () => {
   const { id } = useParams();
   const isEditMode = Boolean(id);
   const [loadingUser, setLoadingUser] = useState(isEditMode);
+  const [displayPhone, setDisplayPhone] = useState("")
 
   const form = useForm({
     resolver: zodResolver(clientFormSchema),
@@ -48,7 +50,6 @@ const ClientItem = () => {
         email: "",
         phone: "",
       });
-      setLoadingUser(false);
       return;
     }
 
@@ -175,30 +176,39 @@ const ClientItem = () => {
                 <Controller
                   name="phone"
                   control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel htmlFor="form-client-phone">
-                        WhatsApp Number
-                      </FieldLabel>
-                      <InputGroup>
-                        <InputGroupInput
-                          {...field}
-                          id="form-client-phone"
-                          aria-invalid={fieldState.invalid}
-                          placeholder="Enter WhatsApp Number"
-                          autoComplete="off"
-                          type="text"
-                          maxLength="10"
-                        />
-                        <InputGroupAddon>
-                          <Phone />
-                        </InputGroupAddon>
-                      </InputGroup>
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
-                    </Field>
-                  )}
+                    render={({ field, fieldState }) => {
+                        
+                      return (
+                        <Field data-invalid={fieldState.invalid}>
+                          <FieldLabel htmlFor="form-client-phone">
+                            WhatsApp Number
+                          </FieldLabel>
+                          <InputGroup>
+                            <InputGroupInput
+                              value={displayPhone}
+                              id="form-client-phone"
+                              aria-invalid={fieldState.invalid}
+                              placeholder="Enter WhatsApp Number"
+                              autoComplete="off"
+                              type="tel"
+                              maxLength="11"
+                              onChange={(e) => {
+                                const formatter = new AsYouType("IN")
+                                const formatted = formatter.input(e.target.value)
+                                setDisplayPhone(formatted)
+                                field.onChange(formatter.getNumberValue() || "")
+                              }}
+                            />
+                            <InputGroupAddon>
+                              <Phone />
+                            </InputGroupAddon>
+                          </InputGroup>
+                          {fieldState.invalid && (
+                            <FieldError errors={[fieldState.error]} />
+                          )}
+                        </Field>
+                      );
+                    }}
                 />
               </FieldGroup>
             </form>
@@ -218,4 +228,4 @@ const ClientItem = () => {
   );
 };
 
-export default ClientItem;
+export default ClientForm;
