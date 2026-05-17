@@ -15,6 +15,8 @@ import { Controller, useForm } from "react-hook-form";
 import { ArrowLeft, Mail } from "lucide-react";
 import { Link } from "react-router-dom";
 import { forgotPasswordSchema } from "@/schema/auth-schema";
+import { authServices } from "../../services/auth-services";
+import { toast } from "sonner";
 
 const ForgotPasswordForm = () => {
 
@@ -25,8 +27,54 @@ const ForgotPasswordForm = () => {
         },
     });
 
-    function onSubmit(data) {
-        console.log(data);
+    const { isSubmitSuccessful } = form.formState;
+    const emailValue = form.watch("email");
+
+    function maskEmail(email = "") {
+        const [name, domain] = email.split("@");
+
+        const visiblePart = name.slice(0, 2);
+
+        const maskedPart = "*".repeat(
+            Math.max(name.length - 2, 0)
+        );
+
+        return `${visiblePart}${maskedPart}@${domain}`;
+    }
+
+
+    if (isSubmitSuccessful) {
+        return (
+            <div className="w-full text-center">
+                <div className="p-3 bg-green-50 border border-green-200 text-green-700 rounded-xl text-sm mb-5">
+                    <p className="text-sm text-center text-muted-foreground">
+                        Reset link sent to{" "}
+                        <span className="font-medium text-primary">
+                            {maskEmail(emailValue)}
+                        </span>
+                        . Check your inbox.
+                    </p>
+                </div>
+                <Link
+                    to="/"
+                    className="text-primary hover:text-hover-primary inline-flex items-center justify-center text-sm font-semibold"
+                >
+                    <ArrowLeft className="w-4 mr-1" />
+                    Back to login
+                </Link>
+            </div>
+        );
+    }
+
+    async function onSubmit(data) {
+        try {
+            const response = await authServices.forgotPasswordUser(data);
+            console.log("Forgot Password User : ", response);
+            toast.success("Forgot Password User");
+        } catch (error) {
+            toast.error(error.response.data.message);
+            console.log("Forgot Password User Error : ", error);
+        }
     }
 
     return (

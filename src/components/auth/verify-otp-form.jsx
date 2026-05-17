@@ -15,6 +15,10 @@ import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
 import { verifyOtpSchema } from "@/schema/auth-schema";
+import { authServices } from "@/services/auth-services";
+import { toast } from "sonner";
+
+
 const VerifyOtpForm = () => {
 
     const [secoundsLeft, setSecoundsLeft] = useState(0);
@@ -78,26 +82,27 @@ const VerifyOtpForm = () => {
         }
         console.log(payload);
         try {
-            // const res = await axios.post("http://localhost:5000/api/auth/register", payload);
-            // toast.success("Registration successful");
-            // navigate("/dashbord");
+            const res = await authServices.verifyOtp(payload);
+            console.log("verify otp : ", res);
+            toast.success("OTP Verified Successfully");
+            localStorage.removeItem("otp_resend_expiry");
+            navigate("/agency");
         } catch (error) {
-            // toast.error(error.response.data.message);
-            console.log(error);
+            const errorMessage = error.message || "Verification failed";
+            toast.error(errorMessage);
+            console.log("verify otp error : ", errorMessage);
         }
     }
 
     const handleResendOtp = async () => {
         try {
-            // await axios.post(
-            //     "/api/auth/resend-otp",
-            //     {
-            //         email: location.state?.email
-            //     }
-            // );
+            await authServices.resendOtp({ email: location.state?.email });
+            toast.success("OTP Resend Successfully");
             startResendTimer();
         } catch (error) {
-            console.log(error);
+            const errorMessage = error.message || "Resend OTP failed";
+            toast.error(errorMessage);
+            console.log("resend otp error : ", errorMessage);
         }
     };
 

@@ -14,8 +14,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { loginSchema } from "@/schema/auth-schema";
+import { authServices } from "../../services/auth-services";
+import { toast } from "sonner";
 
 const LoginForm = () => {
 
@@ -28,9 +30,19 @@ const LoginForm = () => {
         },
     });
 
-    function onSubmit(data) {
-        console.log(data);
+    const navigate = useNavigate();
 
+    async function onSubmit(data) {
+        console.log(data);
+        try {
+            const res = await authServices.loginUser(data);
+            toast.success("Login successful");
+            navigate("/agency");
+            console.log("res", res);
+        } catch (error) {
+            const errorMessage = error?.response?.data?.message || "Something went wrong ";
+            console.log("error", errorMessage);
+        }
     }
 
     return (

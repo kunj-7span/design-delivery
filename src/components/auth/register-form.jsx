@@ -13,13 +13,13 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
 import { Mail, Lock, Eye, EyeOff, User, Camera, X } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-// import axios from "axios";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { registerSchema } from "@/schema/auth-schema";
+import { authServices } from "../../services/auth-services";
 
 const RegisterForm = () => {
 
@@ -39,9 +39,10 @@ const RegisterForm = () => {
         },
     });
 
+    const fileInputRef = useRef(null);
     const navigate = useNavigate();
 
-    const handleImageChange = (e) => {
+    const handleImageChange = async (e) => {
         const file = e.target.files[0];
 
         if (!file) return;
@@ -64,11 +65,32 @@ const RegisterForm = () => {
 
         const imageUrl =
             URL.createObjectURL(file);
-
         setPreview(imageUrl);
+
+        try {
+            // Get pre-signed upload URL
+            const generateRes = await authServices.generateUploadUrl(
+                file.name,
+                file.type,
+            );
+
+            const { uploadUrl, fileUrl } = generateRes;
+
+            if (!uploadUrl || !fileUrl) {
+                throw new Error("Failed to get upload URL");
+            }
+            //Upload file directly to S3
+            await authServices.uploadFileToS3(uploadUrl, file, file.type);
+
+            //Store avatar URL in Zustand
+            // setAvatar(fileUrl);
+        } catch (error) {
+            const errorMessage = error?.message || "Failed to upload profile picture. Please try again.";
+            toast.error(errorMessage);
+            setPreview(null);
+            e.target.value = "";
+        }
     }
-
-
     useEffect(() => {
         return () => {
             if (preview) {
@@ -84,7 +106,7 @@ const RegisterForm = () => {
         setAvatarFile(null);
     }
 
-    const onSubmit = async (data) => {
+    async function onSubmit(data) {
         try {
             const formData = new FormData();
 
@@ -97,8 +119,8 @@ const RegisterForm = () => {
                 formData.append("avatar", avatarFile);
             }
 
-            // const res = await axios.post("http://localhost:5000/api/auth/register", formData);
-            console.log("data", formData);
+            const response = await authServices.registerUser(formData);
+            console.log("Register Success : ", response);
             toast.success("Registration successful");
 
             navigate("/verify-otp", {
@@ -107,8 +129,8 @@ const RegisterForm = () => {
                 },
             });
         } catch (error) {
-            // toast.error(error.response.data.message);
-            console.log(error);
+            toast.error(error.response.data.message);
+            console.log("Register Error : ", error);
         }
     }
 
@@ -118,35 +140,49 @@ const RegisterForm = () => {
             className="grid gap-4"
             onSubmit={form.handleSubmit(onSubmit)}
         >
+            <div className="flex flex-col items-center">
+                <div className="relative mx-auto flex">
+                    <label className="cursor-pointer flex">
+                        <Avatar className="h-18 w-18 border-2 border-dashed border-primary">
 
-            <div className="relative mx-auto flex">
-                <label className="cursor-pointer flex">
-                    <Avatar className="h-20 w-20 border-2 border-dashed border-primary">
+                            <AvatarImage src={preview} className="p-1" />
 
-                        <AvatarImage src={preview} className="p-1" />
+                            <AvatarFallback>
+                                <Camera size={28} className="text-primary" />
+                            </AvatarFallback>
 
-                        <AvatarFallback>
-                            <Camera size={28} className="text-primary" />
-                        </AvatarFallback>
+                        </Avatar>
+                        <input
+                            key={preview ? "has-avatar" : "no-avatar"}
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            ref={fileInputRef}
+                            onChange={handleImageChange}
+                        />
+                    </label>
+                    {preview && (
+                        <button
+                            type="button"
+                            className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors flex items-center justify-center h-6 w-6"
+                            onClick={handleRemoveAvatar}
+                        >
+                            <X size={14} />
+                        </button>
 
-                    </Avatar>
-                    <input
-                        key={preview ? "has-avatar" : "no-avatar"}
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={handleImageChange}
-                    />
-                </label>
-                {preview && (
+                    )}
+
+                </div>
+
+                <div className="mt-1  text-center">
                     <button
                         type="button"
-                        className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors flex items-center justify-center h-6 w-6"
-                        onClick={handleRemoveAvatar}
+                        onClick={() => fileInputRef.current.click()}
+                        className="text-xs text-primary hover:text-hover-primary whitespace-nowrap"
                     >
-                        <X size={14} />
+                        Set profile picture
                     </button>
-                )}
+                </div>
             </div>
             <FieldGroup>
 
@@ -281,7 +317,7 @@ const RegisterForm = () => {
                 />
             </FieldGroup>
 
-            <Button className="w-full mt-3" type="submit" size="lg" >
+            <Button className="w-full mt-1" type="submit" size="lg" >
                 Register
             </Button>
 
