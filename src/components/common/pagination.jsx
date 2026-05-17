@@ -17,7 +17,7 @@ export default function DataTablePagination({
     const pages = [];
     const safeCurrentPage = Math.min(Math.max(currentPage, 1), totalPages);
 
-    if (totalPages <= 7) {
+    if (totalPages <= 5) {
       for (let i = 1; i <= totalPages; i++) {
         pages.push(i);
       }

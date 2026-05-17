@@ -49,6 +49,18 @@ export const fetchEmployees = async ({
   };
 };
 
+export const fetchUserById = async (userId) => {
+  await new Promise((resolve) => setTimeout(resolve, 300));
+
+  const user = employees.find((item) => item.id === Number(userId));
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  return { ...user };
+};
+
 export const deleteEmployee = async (employeeId) => {
   await new Promise((resolve) => setTimeout(resolve, 300));
 
