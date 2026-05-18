@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import {
@@ -19,18 +20,18 @@ import {
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field";
-import { empFormSchema } from "../../schema/schema";
+import { empFormSchema } from "../../../schema/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
-import {
-  Mail,
-  UserRound,
-  IdCardLanyard,
-} from "lucide-react";
+import { Mail, UserRound, IdCardLanyard } from "lucide-react";
+import { fetchUserById } from "./empApi";
+import { useParams } from "react-router-dom";
 
+function EmployeeForm() {
 
-
-function AgencyEmployees() {
+  const { id } = useParams();
+  const isEditMode = Boolean(id);
+  const [loadingUser, setLoadingUser] = useState(isEditMode);
 
   const form = useForm({
     resolver: zodResolver(empFormSchema),
@@ -40,6 +41,34 @@ function AgencyEmployees() {
     },
   });
 
+  useEffect(() => {
+      if (!isEditMode) {
+        form.reset({
+          name: "",
+          email: "",
+          phone: "",
+        });
+        return;
+      }
+      
+      const loadUser = async () => {
+        try {
+          setLoadingUser(true);
+          const user = await fetchUserById(id);
+          form.reset({
+            name: user.name,
+            email: user.email,
+            phone: user.phone,
+          });
+        } catch (error) {
+          toast.error(error.message || "Unable to load client details");
+        } finally {
+          setLoadingUser(false);
+        }
+      };
+  
+      loadUser();
+    }, [form, id, isEditMode]);
 
   function onSubmit(data) {
     toast.success("You submitted the following values:", {
@@ -133,14 +162,13 @@ function AgencyEmployees() {
           </form>
         </CardContent>
         <CardFooter className="">
-          <Button form="form-emp" className="w-full md:w-50">
-            Add Employee
+          <Button form="form-emp" className="w-full md:w-50" disabled={loadingUser}>
+            { isEditMode ? "Update Employee" : "Add Employee"}
           </Button>
         </CardFooter>
       </Card>
-      
     </div>
   );
 }
 
-export default AgencyEmployees;
+export default EmployeeForm;
