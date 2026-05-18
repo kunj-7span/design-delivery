@@ -1,17 +1,19 @@
-import { useState, version } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import DDLogoFull from "../../assets/DDLogoFull.png";
 
 const TopNav = () => (
   <div className="flex justify-between items-center px-4 sm:px-6 py-3 sm:py-2 border-b border-gray-200 bg-white">
     <div className="flex items-center gap-2 sm:gap-3">
-      <div className="w-7 sm:w-8 h-7 sm:h-8 flex items-center justify-center bg-green-600 text-white rounded font-bold text-xs sm:text-sm">
-        DD
-      </div>
-      <div className="text-xs sm:text-sm font-medium text-gray-900">
-        Design Delivery
+      <div className="flex text-white rounded font-bold text-xs sm:text-sm">
+        <img
+          src={DDLogoFull}
+          alt="Design Delivery Logo"
+          className="max-w-full h-10  object-contain"
+        />
       </div>
     </div>
   </div>
@@ -33,7 +35,7 @@ const ViewerHeader = ({ title, folder, date }) => (
     </h1>
     <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 text-xs text-gray-600">
       <span className="flex items-center gap-1">{folder}</span>
-      <span className="flex items-center gap-1">Created {date}</span>
+      {/* <span className="flex items-center gap-1">Created {date}</span> */}
     </div>
   </div>
 );
@@ -238,9 +240,7 @@ const CommentSection = ({
 const InfoBox = () => (
   <>
     <div className="flex items-start gap-2 p-2 sm:p-3 bg-green-50 border-l-4 border-green-600 rounded text-xs text-green-700 mt-4">
-      <span>
-        Your feedback is sent directly to the design team. No account needed.
-      </span>
+      <span>Your feedback is sent directly to the design team.</span>
     </div>
   </>
 );

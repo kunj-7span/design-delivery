@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://cdn.jsdelivr.net/npm/libphonenumber-js@1.13.1/bundle/libphonenumber-js.min.js"></script>
+</head>
+<body>
+    
+    
+
+
+    <script>
+        const phoneNumber = libphonenumber.parsePhoneNumber('2133734253', 'IN');
+
+            if (phoneNumber.isValid()) {
+                console.log(phoneNumber.formatNational());
+            } else {
+                console.log("Invalid number format.");
+            }
+    </script>
+</body>
+</html>
