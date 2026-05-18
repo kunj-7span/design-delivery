@@ -12,95 +12,63 @@ import {
 } from "@/components/ui/field";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
-import { Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { Lock, Eye, EyeOff, RotateCcw } from "lucide-react";
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { loginSchema } from "@/schema/auth-schema";
-import { authServices } from "../../services/auth-services";
+import { Link } from "react-router-dom";
+// import axios from "axios";
 import { toast } from "sonner";
+import { resetPasswordSchema } from "@/schema/auth-schema";
 
-const LoginForm = () => {
+const ResetPasswordForm = () => {
 
-    const [showPassword, setShowPassword] = useState(false)
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setConfirmPassword] = useState(false);
+
     const form = useForm({
-        resolver: zodResolver(loginSchema),
+        resolver: zodResolver(resetPasswordSchema),
+        mode: "onChange",
         defaultValues: {
-            email: "",
             password: "",
+            confirmPassword: ""
         },
     });
 
-    const navigate = useNavigate();
 
-    async function onSubmit(data) {
-        console.log(data);
+    const onSubmit = async (data) => {
         try {
-            const res = await authServices.loginUser(data);
-            toast.success("Login successful");
-            navigate("/agency");
-            console.log("res", res);
+            console.log("data", data);
+            toast.success("Reset password successful");
+
         } catch (error) {
-            const errorMessage = error?.response?.data?.message || "Something went wrong ";
-            console.log("error", errorMessage);
+            // toast.error(error.response.data.message);
+            console.log(error);
         }
     }
 
     return (
         <form
-            id="form-login"
+            id="form-reset-password"
             className="grid gap-4"
             onSubmit={form.handleSubmit(onSubmit)}
         >
+
             <FieldGroup>
 
-                <Controller
-                    name="email"
-                    control={form.control}
-                    render={({ field, fieldState }) => (
-                        <Field data-invalid={fieldState.invalid}>
-                            <FieldLabel htmlFor="form-login-email">Email</FieldLabel>
-                            <InputGroup>
-                                <InputGroupInput
-                                    {...field}
-                                    id="form-login-email"
-                                    aria-invalid={fieldState.invalid}
-                                    placeholder="Enter email"
-                                    autoComplete="email"
-                                    type="email"
-                                />
-                                <InputGroupAddon>
-                                    <Mail />
-                                </InputGroupAddon>
-                            </InputGroup>
-                            {fieldState.invalid && (
-                                <FieldError errors={[fieldState.error]} />
-                            )}
-                        </Field>
-                    )}
-                />
                 <Controller
                     name="password"
                     control={form.control}
                     render={({ field, fieldState }) => (
                         <Field data-invalid={fieldState.invalid}>
-                            <div className="flex items-center">                           <FieldLabel htmlFor="form-login-password">
+                            <FieldLabel htmlFor="form-reset-password-password">
                                 Password
                             </FieldLabel>
-                                <Link
-                                    to="/forgot-password"
-                                    className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
-                                >
-                                    Forgot your password?
-                                </Link>
-                            </div>
-
                             <InputGroup>
                                 <InputGroupInput
                                     {...field}
-                                    id="form-login-password"
+                                    id="form-reset-password-password"
                                     aria-invalid={fieldState.invalid}
                                     placeholder="Enter Password"
-                                    autoComplete="current-password"
+                                    autoComplete="new-password"
                                     type={showPassword ? "text" : "password"}
                                 />
                                 <InputGroupAddon>
@@ -124,15 +92,54 @@ const LoginForm = () => {
                         </Field>
                     )}
                 />
+
+                <Controller
+                    name="confirmPassword"
+                    control={form.control}
+                    render={({ field, fieldState }) => (
+                        <Field data-invalid={fieldState.invalid}>
+                            <FieldLabel htmlFor="form-reset-password-confirm-password">
+                                Confirm Password
+                            </FieldLabel>
+                            <InputGroup>
+                                <InputGroupInput
+                                    {...field}
+                                    id="form-reset-password-confirm-password"
+                                    aria-invalid={fieldState.invalid}
+                                    placeholder="Enter Confirm Password"
+                                    autoComplete="new-password"
+                                    type={showConfirmPassword ? "text" : "password"}
+                                />
+                                <InputGroupAddon>
+                                    <Lock />
+                                </InputGroupAddon>
+                                <InputGroupAddon
+                                    onClick={() => setConfirmPassword((prev) => !prev)}
+                                    className="cursor-pointer"
+                                    align="inline-end"
+                                >
+                                    {showConfirmPassword ? (
+                                        <EyeOff size={18} />
+                                    ) : (
+                                        <Eye size={18} />
+                                    )}
+                                </InputGroupAddon>
+                            </InputGroup>
+                            {fieldState.invalid && (
+                                <FieldError errors={[fieldState.error]} />
+                            )}
+                        </Field>
+                    )}
+                />
             </FieldGroup>
 
-            <Button className="w-full mt-3" type="submit" size="lg">
-                Sign in
+            <Button className="w-full mt-3" type="submit" size="lg" >
+                <RotateCcw size={16} /> Reset Password
             </Button>
 
-            <p className="text-center">Don't have an account? <Link to="/register" className="cursor-pointer text-primary font-medium hover:text-primary/90 transition-colors duration-300 hover:underline underline-offset-2">register</Link></p>
+            <p className="text-center">Back to <Link to="/" className="cursor-pointer text-primary font-medium hover:text-primary/90 transition-colors duration-300 hover:underline underline-offset-2">Login</Link></p>
         </form>
     );
 };
 
-export default LoginForm;
+export default ResetPasswordForm;

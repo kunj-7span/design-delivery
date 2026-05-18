@@ -7,9 +7,9 @@ function AuthLayout({ title, subtitle, children }) {
             <Card className="w-full max-w-sm shadow-xl">
                 <CardHeader>
 
-                    <img src={Logo} alt="DD" className="h-12 mx-auto mb-2" />
-                    {title && <CardTitle className="text-2xl text-center">{title}</CardTitle>}
-                    {subtitle && <CardDescription className="text-center">{subtitle}</CardDescription>}
+                    <img src={Logo} alt="DD" className="h-10 mx-auto mb-2" />
+                    {title && <CardTitle className="text-lg text-center font-medium" >{title}</CardTitle>}
+                    {subtitle && <CardDescription className="text-center text-xs">{subtitle}</CardDescription>}
                 </CardHeader>
                 <CardContent>
                     {children}

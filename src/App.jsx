@@ -4,6 +4,9 @@ import Layout from "./pages/layout";
 import { Route, Routes } from "react-router-dom";
 import LoginPage from './pages/auth/login-page'
 import RegisterPage from './pages/auth/register-page'
+import ForgotPasswordPage from './pages/auth/forgot-password-page'
+import VerifyOtpPage from "./pages/auth/verify-otp-page";
+import ResetPasswordPage from "./pages/auth/reset-password-page";
 import ClientForm from "./pages/agency/clients/client-form";
 import EmployeeList from "./pages/agency/employee/emp-list";
 import EmployeeForm from "./pages/agency/employee/emp-form";
@@ -16,8 +19,9 @@ function App() {
       <Route path="/" />
       <Route index element={<LoginPage />} />
       <Route path="register" element={<RegisterPage />} />
-      <Route path="forgot-password" element={<RegisterPage />} />
-      <Route path="reset-password" element={<RegisterPage />} />
+      <Route path="verify-otp" element={<VerifyOtpPage />} />
+      <Route path="forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="reset-password" element={<ResetPasswordPage />} />
       <Route path="agency" element={<Layout />}>
         <Route path="dashboard" element={<AgencyDashboard />} />
         {/* clients */}
