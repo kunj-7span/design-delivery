@@ -32,11 +32,21 @@ import {
     Trash2,
     Plus,
     View,
+    SquareChartGantt,
+    ClipboardClock,
+    FileXCorner,
+    CalendarCheck2
 } from "lucide-react";
 import { Button } from "../../../components/ui/button";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { fetchTasks } from "./taskApi";
 import SearchInput from "../../../components/common/search-input";
+import {
+    Card,
+    CardHeader,
+    CardTitle,
+    CardAction
+} from "@/components/ui/card"
 
 const statusColor = {
     "Completed": "bg-green-100 text-green-700",
@@ -169,9 +179,7 @@ const columns = (handleSort, onEditProject, onDeleteProject, onViewProject) => [
 
 const TaskList = () => {
     const [tasks, setTasks] = useState([]);
-
     const [page, setPage] = useState(1);
-
     const [totalPages, setTotalPages] = useState(1);
 
     const [search, setSearch] = useState("");
@@ -233,10 +241,70 @@ const TaskList = () => {
         return () => clearTimeout(timer)
     }, [searchText]);
 
+
+    const states = [
+        {
+            id: 1,
+            name: "Total Tasks",
+            count: 10,
+            icon: <SquareChartGantt size="25" />,
+            bg: "bg-purple-100",
+            text: "text-purple-700",
+        },
+        {
+            id: 2,
+            name: "Total Completed Tasks",
+            count: 7,
+            icon: <CalendarCheck2 size="25" />,
+            bg: "bg-emerald-100",
+            text: "text-emerald-700",
+        },
+        {
+            id: 3,
+            name: "Total In Review Assets",
+            count: 23,
+            icon: <ClipboardClock size="25" />,
+            bg: "bg-orange-100",
+            text: "text-orange-700",
+        },
+        {
+            id: 4,
+            name: "Total Rejected Assets",
+            count: 6,
+            icon: <FileXCorner size="25" />,
+            bg: "bg-red-100",
+            text: "text-red-700",
+        },
+    ];
+
     return (
         <div className="space-y-4">
+
+            <h2 className="text-xl font-semibold">TechCrop Rebrand</h2>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                {states.map((item) => (
+                    <Card key={item.id}>
+                        <CardHeader className="flex justify-between items-center">
+                            <CardTitle>
+                                <div className={`p-3 rounded-lg inline-flex ${item.bg}`}>
+                                    {item.icon}
+                                </div>
+                            </CardTitle>
+                            <CardAction className="text-end">
+                                <span className={`text-2xl font-semibold ${item.text}`}>
+                                    {item.count}
+                                </span>
+                                <p className="font-semibold">{item.name}</p>
+                            </CardAction>
+                        </CardHeader>
+                    </Card>
+                ))}
+            </div>
             <div className="flex items-center flex-col sm:flex-row sm:justify-between gap-3">
-                <h2 className="text-xl">Tasks</h2>
+
+                <h2 className="text-lg">Tasks</h2>
+
                 <div className="flex gap-4 items-center">
                     <SearchInput search={searchText} setSearch={setSearchText} />
 
@@ -261,7 +329,7 @@ const TaskList = () => {
 
                     <Button asChild>
                         <Link
-                            to="/agency/projects/tasks/+"
+                            to={`/agency/projects/${pid}/tasks/+`}
                             className="flex items-center gap-1"
                         >
                             <Plus /> Create new
