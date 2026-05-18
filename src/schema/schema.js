@@ -25,20 +25,27 @@ const clientFormSchema = z.object({
     phone: phoneSchema,
 });
 
-const empFormSchema = z.object({
-  name: z
-    .string({ message: "Name is required" })
-    .trim({ message: "Name is required" })
-    .min(1, { message: "Name is required" }),
+const taskFormSchema = z.object({
+    name: nameSchema,
+    employeeName: z.string().min(1, { message: "Employee selection is required" }),
+    description: z.string().optional(),
+});
 
-  email: z
-    .string()
-    .trim({ message: "Email is required" })
-    .min(1, { message: "Email is required" })
-    .email({ message: "Invalid email address" }),
+const empFormSchema = z.object({
+    name: z
+        .string({ message: "Name is required" })
+        .trim({ message: "Name is required" })
+        .min(1, { message: "Name is required" }),
+
+    email: z
+        .string()
+        .trim({ message: "Email is required" })
+        .min(1, { message: "Email is required" })
+        .email({ message: "Invalid email address" }),
 });
 
 export {
     clientFormSchema,
-    empFormSchema
+    empFormSchema,
+    taskFormSchema,
 }

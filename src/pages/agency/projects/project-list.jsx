@@ -98,7 +98,7 @@ const columns = (handleSort, onEditProject, onDeleteProject, onViewProject) => [
             <View
               size="18"
               className="hover:cursor-pointer text-blue-500"
-              onClick={() => onViewProject(row.original)}
+              onClick={() => onViewProject(row.original.id)}
             />
           </TooltipTrigger>
           <TooltipContent side="bottom">
@@ -226,6 +226,16 @@ const ProjectsList = () => {
     return () => clearTimeout(timer)
   }, [searchText]);
 
+
+  function onViewProject(id) {
+    navigate(`/agency/projects/${id}/tasks`);
+  }
+
+  function onDeleteProject() {
+    console.log("delete");
+
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex items-center flex-col sm:flex-row sm:justify-between gap-3">
@@ -264,7 +274,7 @@ const ProjectsList = () => {
         </div>
       </div>
       <DataTable
-        columns={columns(handleSort, onEditProject)}
+        columns={columns(handleSort, onEditProject, onDeleteProject, onViewProject)}
         data={projects}
         currentPage={page}
         totalPages={totalPages}
