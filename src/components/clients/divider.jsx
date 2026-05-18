@@ -20,8 +20,8 @@ const TopNav = () => (
 const Version = () => (
   <div className="mb-4 sm:mb-6">
     <div className="text-xs text-gray-600 font-medium mb-2">Version</div>
-    <Button className="px-2 sm:px-3 py-1  bg-gray-500 hover:bg-gray-600 text-sm rounded-sm">
-      v {Version} · latest
+    <Button className="px-2 sm:px-3 cursor-auto bg-gray-500 hover:bg-gray-500 text-sm rounded-sm">
+      v · latest
     </Button>
   </div>
 );
@@ -470,8 +470,8 @@ export default function Divider() {
       <TopNav />
       <div className="flex flex-col sm:flex-row flex-1">
         <ViewerSection
-          activeVersion={activeVersion}
-          onVersionChange={setActiveVersion}
+          // activeVersion={activeVersion}
+          // onVersionChange={setActiveVersion}
           imageUrl={images[activeVersion]}
           fileName={fileNames[activeVersion]}
         />
