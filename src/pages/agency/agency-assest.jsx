@@ -1,329 +1,348 @@
-import { useState } from "react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { use, useState } from "react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Upload, FileText, Clock, Trash2, Edit, X } from "lucide-react";
+import { Upload, FileText, Clock } from "lucide-react";
+import { toast } from "sonner";
+import { Controller } from "react-hook-form";
+import {
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupText,
+  InputGroupTextarea,
+} from "@/components/ui/input-group";
+import { useForm } from "react-hook-form";
 
 export default function Asset() {
-  const [aavuList, setAavuList] = useState([
+  const [versions, setVersions] = useState([
     {
       id: 1,
-      name: "Social media kit",
+      label: "v1 — initial draft",
       status: "Rejected",
-      dueDate: "Jun 12, 2025",
-      assignedTo: "you",
-      versions: [
-        {
-          id: 1,
-          label: "v1 — initial draft",
-          status: "Rejected",
-          uploadDate: "May 10",
-          notes: "Colors don't match brand guide. Please revise the palette.",
-        },
-        {
-          id: 2,
-          label: "v2 — revised colors",
-          status: "In review",
-          uploadDate: "May 14",
-          notes: "Awaiting client review...",
-        },
-      ],
+      uploadDate: "May 10",
+      fileType: "PDF",
+      notes: "Colors don't match brand guide. Please revise the palette.",
+    },
+    {
+      id: 2,
+      label: "v2 — revised colors",
+      status: "In review",
+      uploadDate: "May 14",
+      fileType: "PNG",
+      notes: "Awaiting client review...",
     },
   ]);
 
-  const [showForm, setShowForm] = useState(false);
-  const [newAavu, setNewAavu] = useState({
-    name: "",
-    assignedTo: "",
-    dueDate: "",
+  const [versionLabel, setVersionLabel] = useState("");
+  const [notes, setNotes] = useState("");
+  const [uploadedFile, setUploadedFile] = useState(null);
+  const [isDragOver, setIsDragOver] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const form = useForm({
+    defaultValues: {
+      versionLabel: "",
+      notes: "",
+      title: "",
+      description: "",
+    },
   });
 
-  const handleAddAavu = () => {
-    if (newAavu.name.trim()) {
-      setAavuList([
-        ...aavuList,
-        {
-          id: aavuList.length + 1,
-          name: newAavu.name,
-          status: "Pending",
-          dueDate: newAavu.dueDate || "Not set",
-          assignedTo: newAavu.assignedTo || "Unassigned",
-          versions: [],
-        },
-      ]);
-      setNewAavu({ name: "", assignedTo: "", dueDate: "" });
-      setShowForm(false);
-    }
+  const asset = {
+    id: 1,
+    name: "Social media kit",
+    status: "Rejected",
+    dueDate: "Jun 12, 2025",
+    assignedTo: "you",
+    clients: ["TechCorp Rebrand", "TechCorp Inc."],
   };
 
   const getStatusColor = (status) => {
     switch (status) {
       case "Rejected":
-        return "bg-red-100 text-red-800";
+        return "bg-red-600 text-white";
       case "In review":
-        return "bg-yellow-100 text-yellow-800";
+        return "bg-yellow-600 text-white";
       case "Approved":
-        return "bg-green-100 text-green-800";
+        return "bg-green-600 text-white";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "bg-gray-600 text-white";
     }
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+      const file = files[0];
+      const validTypes = ["image/png", "image/jpeg", "application/pdf"];
+      const maxSize = 20 * 1024 * 1024; // 20 MB
+
+      if (!validTypes.includes(file.type)) {
+        toast.error("Invalid file type. Only PNG, JPG, and PDF are allowed.");
+        return;
+      }
+
+      if (file.size > maxSize) {
+        toast.error("File size exceeds 20 MB limit.");
+        return;
+      }
+
+      setUploadedFile(file);
+      toast.success(`File "${file.name}" selected!`);
+    }
+  };
+
+  const handleFileInput = (e) => {
+    const files = e.target.files;
+    if (files.length > 0) {
+      const file = files[0];
+      const validTypes = ["image/png", "image/jpeg", "application/pdf"];
+      const maxSize = 20 * 1024 * 1024;
+
+      if (!validTypes.includes(file.type)) {
+        toast.error("Invalid file type. Only PNG, JPG, and PDF are allowed.");
+        return;
+      }
+
+      if (file.size > maxSize) {
+        toast.error("File size exceeds 20 MB limit.");
+        return;
+      }
+
+      setUploadedFile(file);
+      toast.success(`File "${file.name}" selected!`);
+    }
+  };
+
+  const handleUpload = async () => {
+    if (!uploadedFile) {
+      toast.error("Please select a file to upload.");
+      return;
+    }
+
+    if (!versionLabel.trim()) {
+      toast.error("Please enter a version label.");
+      return;
+    }
+
+    setIsLoading(true);
+
+    setTimeout(() => {
+      const fileType = uploadedFile.type === "application/pdf" ? "PDF" : "PNG";
+      const today = new Date();
+      const dateStr = today.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+      });
+
+      const newVersion = {
+        id: versions.length + 1,
+        label: versionLabel,
+        status: "Pending Review",
+        uploadDate: dateStr,
+        fileType: fileType,
+        notes: notes || "No notes added.",
+      };
+
+      setVersions([newVersion, ...versions]);
+      setVersionLabel("");
+      setNotes("");
+      setUploadedFile(null);
+      setIsLoading(false);
+
+      // Generate a mock link
+      const shareLink = `https://design-delivery.com/assets/${asset.id}/v${versions.length + 1}`;
+      toast.success(`Version uploaded! Share link: ${shareLink}`);
+    }, 1500);
   };
 
   return (
     <div className="w-full min-h-screen bg-white">
-      {/* Header Section */}
-      <div className="w-full px-4 sm:px-6 lg:px-8 py-4 sm:py-6 border-b border-gray-200">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900">
-                Aavu Assets
-              </h1>
-              <p className="text-sm sm:text-base text-gray-600 mt-1">
-                Manage your design assets and deliverables
-              </p>
+      {/* Header */}
+      <div className="border-b border-gray-200 px-4 sm:px-6 md:px-8 py-4 sm:py-6">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-start justify-between gap-4 sm:gap-6">
+          <div className="flex items-start gap-3 sm:gap-4 w-full sm:w-auto">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded border border-gray-300 flex items-center justify-center shrink-0">
+              <FileText size={20} className="sm:w-6 sm:h-6 text-gray-600" />
             </div>
-            <Button
-              onClick={() => setShowForm(!showForm)}
-              className="bg-blue-600 hover:bg-blue-700 text-white w-full sm:w-auto text-sm sm:text-base"
-            >
-              <Upload size={18} className="mr-2" />
-              {showForm ? "Cancel" : "New Asset"}
-            </Button>
+            <div className="flex-1 sm:flex-none">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-900 wrap-break-word">
+                {asset.name}
+              </h1>
+              <div className="flex flex-wrap items-center gap-1 sm:gap-2 mt-2 text-gray-600 text-xs sm:text-sm">
+                {asset.clients.map((client, idx) => (
+                  <span key={idx} className="wrap-break-word">
+                    {client}
+                    {idx < asset.clients.length - 1 && (
+                      <span className="mx-1">•</span>
+                    )}
+                  </span>
+                ))}
+              </div>
+            </div>
           </div>
+          <Badge
+            className={`${getStatusColor(asset.status)} shrink-0 text-xs sm:text-sm`}
+          >
+            {asset.status}
+          </Badge>
         </div>
       </div>
 
-      {/* Add New Aavu Form */}
-      {showForm && (
-        <div className="w-full px-4 sm:px-6 lg:px-8 py-4 sm:py-6 bg-gray-50 border-b border-gray-200">
-          <div className="max-w-7xl mx-auto">
-            <Card>
-              <CardHeader>
-                <CardTitle>Create New Asset</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Asset Name
-                    </label>
-                    <Input
-                      placeholder="e.g., Social media kit"
-                      value={newAavu.name}
-                      onChange={(e) =>
-                        setNewAavu({ ...newAavu, name: e.target.value })
-                      }
-                      className="text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Assigned To
-                    </label>
-                    <Input
-                      placeholder="e.g., John Doe"
-                      value={newAavu.assignedTo}
-                      onChange={(e) =>
-                        setNewAavu({ ...newAavu, assignedTo: e.target.value })
-                      }
-                      className="text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Due Date
-                    </label>
-                    <Input
-                      type="date"
-                      value={newAavu.dueDate}
-                      onChange={(e) =>
-                        setNewAavu({ ...newAavu, dueDate: e.target.value })
-                      }
-                      className="text-sm"
-                    />
-                  </div>
-                </div>
-                <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-                  <Button
-                    onClick={handleAddAavu}
-                    className="bg-blue-600 hover:bg-blue-700 text-white text-sm"
-                  >
-                    Create Asset
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => setShowForm(false)}
-                    className="text-sm"
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      )}
+      {/* Main Content */}
+      <div className="px-4 sm:px-6 md:px-8 py-6 sm:py-8">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+          {/* Upload Section */}
+          <div className="col-span-1 lg:col-span-2">
+            <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-4 sm:mb-6 flex items-center gap-2">
+              <Upload size={18} className="sm:w-5 sm:h-5 shrink-0" />
+              <span className="wrap-break-word">Upload new version</span>
+            </h2>
 
-      {/* Assets List */}
-      <div className="w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-        <div className="max-w-7xl mx-auto">
-          {aavuList.length === 0 ? (
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center py-12 sm:py-16">
-                <FileText size={48} className="text-gray-300 mb-4" />
-                <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">
-                  No assets yet
-                </h3>
-                <p className="text-sm sm:text-base text-gray-600 text-center">
-                  Create your first asset to get started
+            <div
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              className={`border-2 border-dashed rounded-lg p-4 sm:p-6 md:p-8 text-center bg-gray-50 mb-4 sm:mb-6 cursor-pointer transition ${
+                isDragOver ? "border-blue-500 bg-blue-50" : "border-gray-300"
+              }`}
+            >
+              <input
+                type="file"
+                id="file-input"
+                accept=".png,.jpg,.jpeg,.pdf"
+                onChange={handleFileInput}
+                className="hidden"
+              />
+              <label htmlFor="file-input" className="cursor-pointer block">
+                <div className="flex items-center justify-center mb-3 sm:mb-4">
+                  <div className="w-9 h-9 sm:w-10 sm:h-10 border border-gray-400 rounded flex items-center justify-center">
+                    <Upload size={18} className="sm:w-5 sm:h-5 text-gray-600" />
+                  </div>
+                </div>
+                <p className="text-gray-700 mb-1 sm:mb-2 text-sm sm:text-base wrap-break-word">
+                  {uploadedFile
+                    ? `Selected: ${uploadedFile.name}`
+                    : "Drag & drop image or PDF"}
                 </p>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-              {aavuList.map((aavu) => (
-                <Card
-                  key={aavu.id}
-                  className="hover:shadow-lg transition-shadow duration-300 border border-gray-200"
-                >
-                  {/* Asset Header */}
-                  <CardHeader className="pb-3 sm:pb-4">
-                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-3 mb-2">
-                      <div className="flex-1 min-w-0">
-                        <CardTitle className="text-base sm:text-lg text-gray-900 truncate">
-                          {aavu.name}
-                        </CardTitle>
-                      </div>
-                      <Badge
-                        className={`${getStatusColor(
-                          aavu.status,
-                        )} whitespace-nowrap text-xs sm:text-sm`}
-                      >
-                        {aavu.status}
-                      </Badge>
-                    </div>
+                <p className="text-gray-500 text-xs sm:text-sm">
+                  PNG, JPG, PDF • Max 20 MB
+                </p>
+              </label>
+            </div>
 
-                    {/* Meta Info */}
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">
-                      <span className="flex items-center gap-1">
-                        <Clock size={14} />
-                        Due {aavu.dueDate}
-                      </span>
-                      <span className="hidden sm:block">•</span>
-                      <span>Assigned to {aavu.assignedTo}</span>
-                    </div>
+            <div className="mb-3 sm:mb-4">
+              <Field>
+                <FieldLabel htmlFor="input-demo-api-versionLabel">
+                  Version Label
+                </FieldLabel>
+                <Input id="input-demo-api-versionLabel" placeholder="e.g. v2" />
+              </Field>
+            </div>
 
-                    {/* Upload Section */}
-                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 sm:p-6 text-center bg-gray-50">
-                      <Upload
-                        size={28}
-                        className="mx-auto text-gray-400 mb-2"
-                      />
-                      <p className="text-xs sm:text-sm text-gray-600 mb-1">
-                        Drag & drop image or PDF
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        PNG, JPG, PDF • Max 20 MB
-                      </p>
-                    </div>
-
-                    {/* Version Label Input */}
-                    <div className="mt-3 sm:mt-4">
-                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
-                        Version label (e.g. v2 — revised)
-                      </label>
-                      <Input
-                        placeholder="e.g. v2 — revised colors"
-                        className="text-xs sm:text-sm"
-                      />
-                    </div>
-
-                    {/* Notes */}
-                    <div className="mt-3 sm:mt-4">
-                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
+            <div className="mb-4 sm:mb-6">
+              <FieldGroup>
+                <Controller
+                  name="Notes for client (optional)"
+                  control={form.control}
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={fieldState.invalid}>
+                      <FieldLabel htmlFor="form-rhf-demo-description">
                         Notes for client (optional)
-                      </label>
-                      <Textarea
-                        placeholder="Add any notes or feedback..."
-                        className="text-xs sm:text-sm min-h-20 resize-none"
-                      />
-                    </div>
+                      </FieldLabel>
+                      <InputGroup>
+                        <InputGroupTextarea
+                          {...field}
+                          id="form-rhf-demo-description"
+                          placeholder="Add any notes for feedback"
+                          rows={6}
+                          className="min-h-24 resize-none"
+                          aria-invalid={fieldState.invalid}
+                        />
+                        <InputGroupAddon align="block-end">
+                          <InputGroupText className="tabular-nums">
+                            {field.value?.length}/200 characters
+                          </InputGroupText>
+                        </InputGroupAddon>
+                      </InputGroup>
 
-                    {/* Action Button */}
-                    <Button className="w-full mt-3 sm:mt-4 bg-gray-800 hover:bg-gray-900 text-white text-sm">
-                      Upload & generate link
-                    </Button>
-                  </CardHeader>
-
-                  {/* Version History */}
-                  {aavu.versions.length > 0 && (
-                    <div className="border-t border-gray-200 pt-4 sm:pt-6">
-                      <h4 className="font-semibold text-gray-900 text-sm sm:text-base px-4 sm:px-6 mb-3 sm:mb-4 flex items-center gap-2">
-                        <Clock size={16} />
-                        Version history
-                      </h4>
-                      <div className="px-4 sm:px-6 space-y-3 sm:space-y-4">
-                        {aavu.versions.map((version) => (
-                          <div
-                            key={version.id}
-                            className="pb-3 sm:pb-4 border-b border-gray-200 last:border-0"
-                          >
-                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
-                              <div className="flex items-center gap-2 min-w-0">
-                                <FileText
-                                  size={16}
-                                  className="text-gray-400 shrink-0"
-                                />
-                                <span className="text-xs sm:text-sm font-medium text-gray-900 truncate">
-                                  {version.label}
-                                </span>
-                              </div>
-                              <Badge
-                                className={`${getStatusColor(
-                                  version.status,
-                                )} whitespace-nowrap text-xs`}
-                              >
-                                {version.status}
-                              </Badge>
-                            </div>
-                            <p className="text-xs text-gray-500 mb-2">
-                              Uploaded {version.uploadDate}
-                            </p>
-                            <p className="text-xs sm:text-sm text-gray-700 bg-gray-50 p-2 sm:p-3 rounded border border-gray-200">
-                              {version.notes}
-                            </p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
+                      {fieldState.invalid && (
+                        <FieldError errors={[fieldState.error]} />
+                      )}
+                    </Field>
                   )}
+                />
+              </FieldGroup>
+            </div>
 
-                  {/* Card Footer Actions */}
-                  <div className="border-t border-gray-200 px-4 sm:px-6 py-3 sm:py-4 flex flex-col sm:flex-row gap-2 sm:gap-3">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex-1 text-xs sm:text-sm"
+            <Button
+              onClick={handleUpload}
+              disabled={isLoading}
+              className="w-full text-white disabled:opacity-50 text-sm sm:text-base"
+            >
+              {isLoading ? "Uploading..." : "Upload & generate link"}
+            </Button>
+          </div>
+
+          {/* Version History */}
+          <div className="col-span-1">
+            <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-4 sm:mb-6 flex items-center gap-2">
+              <Clock size={18} className="sm:w-5 sm:h-5 shrink-0" />
+              <span className="wrap-break-word">Version history</span>
+            </h2>
+
+            <div className="space-y-3 sm:space-y-4">
+              {versions.map((version) => (
+                <div
+                  key={version.id}
+                  className="border border-gray-200 rounded-lg p-3 sm:p-4 bg-white"
+                >
+                  <div className="flex flex-col sm:flex-row items-start justify-between gap-2 sm:gap-3 mb-3">
+                    <div className="flex-1">
+                      <p className="text-gray-900 font-medium text-sm sm:text-base wrap-break-word">
+                        {version.label}
+                      </p>
+                      <p className="text-gray-600 text-xs sm:text-sm wrap-break-words">
+                        Uploaded {version.uploadDate} • {version.fileType}
+                      </p>
+                    </div>
+                    <Badge
+                      className={`${getStatusColor(version.status)} shrink-0 text-xs`}
                     >
-                      <Edit size={14} className="mr-1 sm:mr-2" />
-                      <span className="hidden sm:inline">Edit</span>
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex-1 text-xs sm:text-sm text-red-600 hover:text-red-700"
-                    >
-                      <Trash2 size={14} className="mr-1 sm:mr-2" />
-                      <span className="hidden sm:inline">Delete</span>
-                    </Button>
+                      {version.status}
+                    </Badge>
                   </div>
-                </Card>
+                  <p className="text-gray-700 text-xs sm:text-sm bg-gray-50 p-2 sm:p-3 rounded border border-gray-200 wrap-break-word">
+                    "{version.notes}"
+                  </p>
+                </div>
               ))}
             </div>
-          )}
+          </div>
         </div>
       </div>
     </div>
