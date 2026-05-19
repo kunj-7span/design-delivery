@@ -2,9 +2,9 @@ import AgencyDashboard from "./pages/agency/agency-dashboard";
 import ClientList from "./pages/agency/clients/client-list";
 import Layout from "./pages/layout";
 import { Route, Routes } from "react-router-dom";
-import LoginPage from './pages/auth/login-page'
-import RegisterPage from './pages/auth/register-page'
-import ForgotPasswordPage from './pages/auth/forgot-password-page'
+import LoginPage from "./pages/auth/login-page";
+import RegisterPage from "./pages/auth/register-page";
+import ForgotPasswordPage from "./pages/auth/forgot-password-page";
 import VerifyOtpPage from "./pages/auth/verify-otp-page";
 import ResetPasswordPage from "./pages/auth/reset-password-page";
 import ClientForm from "./pages/agency/clients/client-form";
@@ -26,16 +26,13 @@ function App() {
         <Route path="dashboard" element={<AgencyDashboard />} />
         {/* clients */}
         <Route path="clients" element={<ClientList />} />
-        <Route path="clients/create" element={<ClientForm />} />
-        <Route path="clients/edit/:id" element={<ClientForm />} />
+        <Route path="clients/:id" element={<ClientForm />} />
         {/* employees */}
         <Route path="employees" element={<EmployeeList />} />
-        <Route path="employees/create" element={<EmployeeForm />} />
-        <Route path="employees/edit/:id" element={<EmployeeForm />} />
+        <Route path="employees/:id" element={<EmployeeForm />} />
         {/* projects */}
         <Route path="projects" element={<ProjectsList />} />
-        <Route path="projects/create" element={<ProjectForm />} />
-        <Route path="projects/edit/:id" element={<ProjectForm />} />
+        <Route path="projects/:id" element={<ProjectForm />} />
       </Route>
     </Routes>
   );

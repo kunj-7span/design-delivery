@@ -27,13 +27,7 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { useState, useEffect } from "react";
-import {
-  SquarePen,
-  ArrowUpDown,
-  Trash2,
-  Plus,
-  View,
-} from "lucide-react";
+import { SquarePen, ArrowUpDown, Trash2, Plus, View } from "lucide-react";
 import { Button } from "../../../components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import { fetchProjects } from "./projectApi";
@@ -169,7 +163,7 @@ const ProjectsList = () => {
   const [totalPages, setTotalPages] = useState(1);
 
   const [search, setSearch] = useState("");
-  const [searchText, setSearchText] = useState("")
+  const [searchText, setSearchText] = useState("");
 
   const [sortBy, setSortBy] = useState("");
 
@@ -191,7 +185,7 @@ const ProjectsList = () => {
   };
 
   const onEditProject = (row) => {
-    navigate(`/agency/projects/edit/${row.id}`);
+    navigate(`/agency/projects/${row.id}`);
   };
 
   useEffect(() => {
@@ -221,15 +215,15 @@ const ProjectsList = () => {
   useEffect(() => {
     const timer = setTimeout(() => {
       setPage(1);
-      setSearch(searchText)
+      setSearch(searchText);
     }, 400);
-    return () => clearTimeout(timer)
+    return () => clearTimeout(timer);
   }, [searchText]);
 
   return (
     <div className="space-y-4">
       <div className="flex items-center flex-col sm:flex-row sm:justify-between gap-3">
-        <h2 className="text-xl">Projects</h2>
+        <h2 className="text-xl font-medium">Projects</h2>
         <div className="flex gap-4 items-center">
           <SearchInput search={searchText} setSearch={setSearchText} />
 
@@ -254,10 +248,7 @@ const ProjectsList = () => {
           </Select>
 
           <Button asChild>
-            <Link
-              to="/agency/projects/create"
-              className="flex items-center gap-1"
-            >
+            <Link to="/agency/projects/+" className="flex items-center gap-1">
               <Plus /> Create new
             </Link>
           </Button>
