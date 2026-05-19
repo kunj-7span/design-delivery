@@ -2,7 +2,7 @@ const users = Array.from({ length: 137 }, (_, i) => ({
   id: i + 1,
   name: `User ${i + 1}`,
   email: `user${i + 1}@gmail.com`,
-  phone: `987654${String(i).padStart(4, "0")}`,
+  phone: `+91987654${String(i).padStart(4, "0")}`,
 }));
 
 export const fetchUsers = async ({

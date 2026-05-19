@@ -1,11 +1,6 @@
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "../../../components/ui/button";
 import { Link } from "react-router-dom";
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupInput,
-} from "@/components/ui/input-group";
 import {
   Tooltip,
   TooltipContent,
@@ -24,10 +19,11 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { parsePhoneNumberFromString } from "libphonenumber-js";
-import DataTable from "@/components/common/data-table";
+import DataTable from "../../../components/common/data-table";
 import { useNavigate } from "react-router-dom";
-import { Search, Plus, ArrowUpDown, SquarePen, Trash2 } from "lucide-react";
+import { Plus, ArrowUpDown, SquarePen, Trash2 } from "lucide-react";
 import { fetchUsers } from "./userApi";
+import SearchInput from "../../../components/common/search-input";
 
 const columns = (handleSort, onEditClient, onDeleteClient) => [
   {
@@ -134,6 +130,7 @@ function ClientList() {
   const [totalPages, setTotalPages] = useState(1);
 
   const [search, setSearch] = useState("");
+  const [searchText, setSearchText] = useState("");
 
   const [sortBy, setSortBy] = useState("name");
 
@@ -167,6 +164,14 @@ function ClientList() {
     getUsers();
   }, [page, search, sortBy, order]);
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setPage(1);
+      setSearch(searchText);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [searchText]);
+
   const handleSort = (field) => {
     if (sortBy === field) {
       setOrder((prev) => (prev === "asc" ? "desc" : "asc"));
@@ -177,33 +182,19 @@ function ClientList() {
   };
 
   const onEditClient = (row) => {
-    navigate(`/agency/clients/edit/${row.id}`);
+    navigate(`/agency/clients/${row.id}`);
   };
 
   return (
     <div>
       <div className="space-y-4">
         <div className="flex items-center flex-col sm:flex-row sm:justify-between gap-3">
-          <h2 className="text-xl">Clients</h2>
+          <h2 className="text-xl font-medium">Clients</h2>
           <div className="flex gap-4 items-center">
-            <InputGroup className="sm:max-w-80">
-              <InputGroupInput
-                value={search}
-                placeholder="Search users..."
-                autoComplete="off"
-                type="text"
-                onChange={(e) => {
-                  setPage(1);
-                  setSearch(e.target.value);
-                }}
-              />
-              <InputGroupAddon>
-                <Search />
-              </InputGroupAddon>
-            </InputGroup>
+            <SearchInput search={searchText} setSearch={setSearchText} />
             <Button asChild>
               <Link
-                to="/agency/clients/create"
+                to={`/agency/clients/+`}
                 className="flex items-center gap-1"
               >
                 <Plus /> Create new

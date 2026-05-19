@@ -17,7 +17,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 
 createRoot(document.getElementById("root")).render(
   <BrowserRouter>
-    <TooltipProvider delayDuration={500}>
+    <TooltipProvider delayDuration={700}>
       <Toaster position="top-right" richColors />
       <App />
     </TooltipProvider>

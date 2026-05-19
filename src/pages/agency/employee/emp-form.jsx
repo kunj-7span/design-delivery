@@ -28,9 +28,9 @@ import { fetchUserById } from "./empApi";
 import { useParams } from "react-router-dom";
 
 function EmployeeForm() {
-
   const { id } = useParams();
-  const isEditMode = Boolean(id);
+  console.log("id: ", typeof id);
+  const isEditMode = id !== "+";
   const [loadingUser, setLoadingUser] = useState(isEditMode);
 
   const form = useForm({
@@ -42,33 +42,33 @@ function EmployeeForm() {
   });
 
   useEffect(() => {
-      if (!isEditMode) {
+    if (!isEditMode) {
+      form.reset({
+        name: "",
+        email: "",
+        phone: "",
+      });
+      return;
+    }
+
+    const loadUser = async () => {
+      try {
+        setLoadingUser(true);
+        const user = await fetchUserById(id);
         form.reset({
-          name: "",
-          email: "",
-          phone: "",
+          name: user.name,
+          email: user.email,
+          phone: user.phone,
         });
-        return;
+      } catch (error) {
+        toast.error(error.message || "Unable to load client details");
+      } finally {
+        setLoadingUser(false);
       }
-      
-      const loadUser = async () => {
-        try {
-          setLoadingUser(true);
-          const user = await fetchUserById(id);
-          form.reset({
-            name: user.name,
-            email: user.email,
-            phone: user.phone,
-          });
-        } catch (error) {
-          toast.error(error.message || "Unable to load client details");
-        } finally {
-          setLoadingUser(false);
-        }
-      };
-  
-      loadUser();
-    }, [form, id, isEditMode]);
+    };
+
+    loadUser();
+  }, [form, id, isEditMode]);
 
   function onSubmit(data) {
     toast.success("You submitted the following values:", {
@@ -85,12 +85,13 @@ function EmployeeForm() {
         background: "",
       },
     });
+    form.reset();
   }
 
   return (
-    <div>
+    <>
       <h2 className="text-xl font-medium">Employees</h2>
-      <Card className="w-full mt-4">
+      <Card className="w-full">
         <CardHeader>
           <CardTitle className="text-lg flex gap-3">
             <IdCardLanyard />
@@ -162,12 +163,16 @@ function EmployeeForm() {
           </form>
         </CardContent>
         <CardFooter className="">
-          <Button form="form-emp" className="w-full md:w-50" disabled={loadingUser}>
-            { isEditMode ? "Update Employee" : "Add Employee"}
+          <Button
+            form="form-emp"
+            className="w-full md:w-50"
+            disabled={loadingUser}
+          >
+            {isEditMode ? "Update Employee" : "Add Employee"}
           </Button>
         </CardFooter>
       </Card>
-    </div>
+    </>
   );
 }
 

@@ -1,4 +1,5 @@
 import * as z from "zod";
+import { isValidPhoneNumber } from "libphonenumber-js";
 
 const emailSchema = z
     .string({ message: "Invalid email address" })
@@ -14,9 +15,8 @@ const nameSchema = z
 const phoneSchema = z
     .string({ message: "Invalid phone" })
     .trim()
-    .length(10, { message: "phone number must be exactly 10 digits" })
-    .regex(/^\d+$/, {
-        message: "Phone number must contain only numbers",
+    .refine((val) => isValidPhoneNumber(val, "IN"), {
+        message: "Invalid phone number",
     });
 
 const clientFormSchema = z.object({
@@ -25,20 +25,25 @@ const clientFormSchema = z.object({
     phone: phoneSchema,
 });
 
-const empFormSchema = z.object({
-  name: z
-    .string({ message: "Name is required" })
-    .trim({ message: "Name is required" })
-    .min(1, { message: "Name is required" }),
+const taskFormSchema = z.object({
+    name: nameSchema,
+    employeeName: z.string().min(1, { message: "Employee selection is required" }),
+    description: z.string().max(300, { message: "Description cannot exceed 300 characters" }).optional().default(null)
+});
 
-  email: z
-    .string()
-    .trim({ message: "Email is required" })
-    .min(1, { message: "Email is required" })
-    .email({ message: "Invalid email address" }),
+const empFormSchema = z.object({
+    name: nameSchema,
+    email: emailSchema,
+});
+
+const projectSchema = z.object({
+    name: nameSchema,
+    client: nameSchema,
 });
 
 export {
     clientFormSchema,
-    empFormSchema
+    empFormSchema,
+    projectSchema
+    taskFormSchema,
 }
