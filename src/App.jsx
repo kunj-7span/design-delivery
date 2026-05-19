@@ -12,6 +12,8 @@ import EmployeeList from "./pages/agency/employee/emp-list";
 import EmployeeForm from "./pages/agency/employee/emp-form";
 import ProjectsList from "./pages/agency/projects/project-list";
 import ProjectForm from "./pages/agency/projects/project-form";
+import TaskForm from "./pages/agency/tasks/task-form";
+import TaskList from "./pages/agency/tasks/task-list";
 
 function App() {
   return (
@@ -33,6 +35,9 @@ function App() {
         {/* projects */}
         <Route path="projects" element={<ProjectsList />} />
         <Route path="projects/:id" element={<ProjectForm />} />
+        {/* Tasks */}
+        <Route path="projects/:pid/tasks" element={<TaskList />} />
+        <Route path="projects/:pid/tasks/:id" element={<TaskForm />} />
       </Route>
     </Routes>
   );

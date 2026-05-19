@@ -25,6 +25,12 @@ const clientFormSchema = z.object({
     phone: phoneSchema,
 });
 
+const taskFormSchema = z.object({
+    name: nameSchema,
+    employeeName: z.string().min(1, { message: "Employee selection is required" }),
+    description: z.string().max(300, { message: "Description cannot exceed 300 characters" }).optional().default(null)
+});
+
 const empFormSchema = z.object({
     name: nameSchema,
     email: emailSchema,
@@ -39,4 +45,5 @@ export {
     clientFormSchema,
     empFormSchema,
     projectSchema
+    taskFormSchema,
 }

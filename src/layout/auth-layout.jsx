@@ -4,7 +4,7 @@ import Logo from "../assets/DDLogoFull.png";
 function AuthLayout({ title, subtitle, children }) {
     return (
         <div className="flex items-center justify-center h-screen bg-gray-100">
-            <Card className="w-full max-w-sm shadow-xl">
+            <Card className="w-full max-w-sm shadow-xl my-4 mx-4" >
                 <CardHeader>
 
                     <img src={Logo} alt="DD" className="h-10 mx-auto mb-2" />

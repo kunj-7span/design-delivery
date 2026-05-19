@@ -71,7 +71,7 @@ export function NavUser({
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => navigate("/login")} className="cursor-pointer">
+            <DropdownMenuItem onClick={() => navigate("/")} className="cursor-pointer">
               <LogOutIcon />
               Log out
             </DropdownMenuItem>
