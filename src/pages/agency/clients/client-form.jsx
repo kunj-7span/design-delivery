@@ -26,13 +26,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { fetchUserById } from "./userApi";
-import {AsYouType} from 'libphonenumber-js'
+import parsePhoneNumberFromString, { AsYouType } from "libphonenumber-js";
 
 const ClientForm = () => {
   const { id } = useParams();
-  const isEditMode = Boolean(id);
+  const isEditMode = id !== "+";
   const [loadingUser, setLoadingUser] = useState(isEditMode);
-  const [displayPhone, setDisplayPhone] = useState("")
+  const [displayPhone, setDisplayPhone] = useState("");
+  const formatter = new AsYouType("IN");
 
   const form = useForm({
     resolver: zodResolver(clientFormSchema),
@@ -62,6 +63,9 @@ const ClientForm = () => {
           email: user.email,
           phone: user.phone,
         });
+        setDisplayPhone(
+          parsePhoneNumberFromString(user.phone, "IN")?.formatNational(),
+        );
       } catch (error) {
         toast.error(error.message || "Unable to load client details");
       } finally {
@@ -92,12 +96,13 @@ const ClientForm = () => {
         },
       },
     );
+    form.reset();
   }
 
   return (
     <>
       <h2 className="text-xl font-medium">Clients</h2>
-      <Card className="w-full mt-4">
+      <Card className="w-full">
         <CardHeader>
           <CardTitle className="text-lg flex gap-3">
             <UserRoundPlus />
@@ -176,39 +181,37 @@ const ClientForm = () => {
                 <Controller
                   name="phone"
                   control={form.control}
-                    render={({ field, fieldState }) => {
-                        
-                      return (
-                        <Field data-invalid={fieldState.invalid}>
-                          <FieldLabel htmlFor="form-client-phone">
-                            WhatsApp Number
-                          </FieldLabel>
-                          <InputGroup>
-                            <InputGroupInput
-                              value={displayPhone}
-                              id="form-client-phone"
-                              aria-invalid={fieldState.invalid}
-                              placeholder="Enter WhatsApp Number"
-                              autoComplete="off"
-                              type="tel"
-                              maxLength="11"
-                              onChange={(e) => {
-                                const formatter = new AsYouType("IN")
-                                const formatted = formatter.input(e.target.value)
-                                setDisplayPhone(formatted)
-                                field.onChange(formatter.getNumberValue() || "")
-                              }}
-                            />
-                            <InputGroupAddon>
-                              <Phone />
-                            </InputGroupAddon>
-                          </InputGroup>
-                          {fieldState.invalid && (
-                            <FieldError errors={[fieldState.error]} />
-                          )}
-                        </Field>
-                      );
-                    }}
+                  render={({ field, fieldState }) => {
+                    return (
+                      <Field data-invalid={fieldState.invalid}>
+                        <FieldLabel htmlFor="form-client-phone">
+                          WhatsApp Number
+                        </FieldLabel>
+                        <InputGroup>
+                          <InputGroupInput
+                            value={displayPhone}
+                            id="form-client-phone"
+                            aria-invalid={fieldState.invalid}
+                            placeholder="Enter WhatsApp Number"
+                            autoComplete="off"
+                            type="tel"
+                            maxLength="11"
+                            onChange={(e) => {
+                              const formatted = formatter.input(e.target.value);
+                              setDisplayPhone(formatted);
+                              field.onChange(formatter.getNumberValue() || "");
+                            }}
+                          />
+                          <InputGroupAddon>
+                            <Phone />
+                          </InputGroupAddon>
+                        </InputGroup>
+                        {fieldState.invalid && (
+                          <FieldError errors={[fieldState.error]} />
+                        )}
+                      </Field>
+                    );
+                  }}
                 />
               </FieldGroup>
             </form>

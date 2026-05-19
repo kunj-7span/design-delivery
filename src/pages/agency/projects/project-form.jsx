@@ -18,27 +18,33 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from "@/components/ui/input-group";
+import {
+  Combobox,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+} from "@/components/ui/combobox";
 import { toast } from "sonner";
 import { Controller, useForm } from "react-hook-form";
-import { Mail, UserRound, UserRoundPlus, Phone } from "lucide-react";
-import { clientFormSchema } from "../../../schema/schema";
+import { SquareChartGantt, UserRound } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import {AsYouType} from 'libphonenumber-js'
+import { fetchProjectById } from "./projectApi";
+import { projectSchema } from "../../../schema/schema";
 
 const ProjectForm = () => {
   const { id } = useParams();
-  const isEditMode = Boolean(id);
-  const [loadingUser, setLoadingUser] = useState(isEditMode);
-  const [displayPhone, setDisplayPhone] = useState("")
+  const isEditMode = id !== "+";
+  const [loadingProject, setLoadingProject] = useState(isEditMode);
 
   const form = useForm({
-    resolver: zodResolver(clientFormSchema),
+    resolver: zodResolver(projectSchema),
     defaultValues: {
       name: "",
-      email: "",
-      phone: "",
+      client: "",
     },
   });
 
@@ -46,36 +52,34 @@ const ProjectForm = () => {
     if (!isEditMode) {
       form.reset({
         name: "",
-        email: "",
-        phone: "",
+        client: "",
       });
       return;
     }
 
-    const loadUser = async () => {
+    const loadProject = async () => {
       try {
-        setLoadingUser(true);
-        const user = await fetchUserById(id);
+        setLoadingProject(true);
+        const user = await fetchProjectById(id);
         form.reset({
           name: user.name,
-          email: user.email,
-          phone: user.phone,
+          client: user.clientName,
         });
       } catch (error) {
         toast.error(error.message || "Unable to load client details");
       } finally {
-        setLoadingUser(false);
+        setLoadingProject(false);
       }
     };
 
-    loadUser();
+    loadProject();
   }, [form, id, isEditMode]);
 
   function onSubmit(data) {
     toast.success(
       isEditMode
-        ? "Client updated successfully"
-        : "Client created successfully",
+        ? "Project updated successfully"
+        : "Project created successfully",
       {
         description: (
           <pre className="mt-2 w-[320px] overflow-x-auto rounded-md bg-code p-4 text-code-foreground">
@@ -90,46 +94,48 @@ const ProjectForm = () => {
           background: "",
         },
       },
+      form.reset(),
     );
   }
+  const frameworks = ["nirmal", "nirmal patel", "nirmal m. patel"];
 
   return (
     <>
-      <h2 className="text-xl font-medium">Clients</h2>
-      <Card className="w-full mt-4">
+      <h2 className="text-xl font-medium">Project</h2>
+      <Card className="w-full">
         <CardHeader>
           <CardTitle className="text-lg flex gap-3">
-            <UserRoundPlus />
-            {isEditMode ? "Edit Client Details" : "Add Client Details"}
+            <SquareChartGantt />
+            {isEditMode ? "Edit Project Details" : "Add Project Details"}
           </CardTitle>
           <CardDescription>
             {isEditMode
-              ? "Update your client details below"
-              : "Enter your client details below to send designs"}
+              ? "Update your project details below"
+              : "Enter your project details below to send designs"}
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {loadingUser ? (
+          {loadingProject ? (
             <div className="py-8 text-center text-sm text-muted-foreground">
-              Loading client details...
+              Loading project details...
             </div>
           ) : (
             <form
-              id="form-client"
+              id="form-project"
               className="grid gap-4"
               onSubmit={form.handleSubmit(onSubmit)}
             >
-              <FieldGroup className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+              <FieldGroup className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2">
                 <Controller
                   name="name"
                   control={form.control}
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel htmlFor="form-client-name">Name</FieldLabel>
+                      <FieldLabel htmlFor="form-project-name">Name</FieldLabel>
                       <InputGroup>
                         <InputGroupInput
                           {...field}
-                          id="form-client-name"
+                          id="form-project-name"
                           aria-invalid={fieldState.invalid}
                           placeholder="Enter Name"
                           autoComplete="off"
@@ -147,67 +153,35 @@ const ProjectForm = () => {
                 />
 
                 <Controller
-                  name="email"
+                  name="client"
                   control={form.control}
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel htmlFor="form-client-email">Email</FieldLabel>
-                      <InputGroup>
-                        <InputGroupInput
-                          {...field}
-                          id="form-client-email"
-                          aria-invalid={fieldState.invalid}
-                          placeholder="Enter email"
-                          autoComplete="off"
-                          type="email"
-                        />
-                        <InputGroupAddon>
-                          <Mail />
-                        </InputGroupAddon>
-                      </InputGroup>
+                      <FieldLabel htmlFor="form-project-client">
+                        Client
+                      </FieldLabel>
+                      <Combobox
+                        items={frameworks}
+                        value={field.value}
+                        onValueChange={field.onChange}
+                      >
+                        <ComboboxInput placeholder="Select a framework" />
+                        <ComboboxContent>
+                          <ComboboxEmpty>No items found.</ComboboxEmpty>
+                          <ComboboxList>
+                            {(item) => (
+                              <ComboboxItem key={item} value={item}>
+                                {item}
+                              </ComboboxItem>
+                            )}
+                          </ComboboxList>
+                        </ComboboxContent>
+                      </Combobox>
                       {fieldState.invalid && (
                         <FieldError errors={[fieldState.error]} />
                       )}
                     </Field>
                   )}
-                />
-
-                <Controller
-                  name="phone"
-                  control={form.control}
-                    render={({ field, fieldState }) => {
-                        
-                      return (
-                        <Field data-invalid={fieldState.invalid}>
-                          <FieldLabel htmlFor="form-client-phone">
-                            WhatsApp Number
-                          </FieldLabel>
-                          <InputGroup>
-                            <InputGroupInput
-                              value={displayPhone}
-                              id="form-client-phone"
-                              aria-invalid={fieldState.invalid}
-                              placeholder="Enter WhatsApp Number"
-                              autoComplete="off"
-                              type="tel"
-                              maxLength="11"
-                              onChange={(e) => {
-                                const formatter = new AsYouType("IN")
-                                const formatted = formatter.input(e.target.value)
-                                setDisplayPhone(formatted)
-                                field.onChange(formatter.getNumberValue() || "")
-                              }}
-                            />
-                            <InputGroupAddon>
-                              <Phone />
-                            </InputGroupAddon>
-                          </InputGroup>
-                          {fieldState.invalid && (
-                            <FieldError errors={[fieldState.error]} />
-                          )}
-                        </Field>
-                      );
-                    }}
                 />
               </FieldGroup>
             </form>
@@ -215,11 +189,11 @@ const ProjectForm = () => {
         </CardContent>
         <CardFooter className="">
           <Button
-            form="form-client"
+            form="form-project"
             className="w-full md:w-50"
-            disabled={loadingUser}
+            disabled={loadingProject}
           >
-            {isEditMode ? "Update Client" : "Create Client"}
+            {isEditMode ? "Update Project" : "Create Project"}
           </Button>
         </CardFooter>
       </Card>

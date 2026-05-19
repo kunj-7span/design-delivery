@@ -1,10 +1,5 @@
 import DataTable from "../../../components/common/data-table";
 import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupInput,
-} from "@/components/ui/input-group";
-import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
@@ -23,9 +18,10 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useState, useEffect } from "react";
 import { fetchEmployees } from "./empApi";
-import { Search, SquarePen , ArrowUpDown, Trash2, Plus } from "lucide-react";
+import { SquarePen , ArrowUpDown, Trash2, Plus } from "lucide-react";
 import { Button } from "../../../components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
+import SearchInput from "../../../components/common/search-input";
 
 const columns = (handleSort, onEditEmp, onDeleteEmp) => [
   {
@@ -120,6 +116,7 @@ const EmployeeList = () => {
   const [totalPages, setTotalPages] = useState(1);
 
   const [search, setSearch] = useState("");
+  const [searchText, setSearchText] = useState("");
 
   const [sortBy, setSortBy] = useState("name");
 
@@ -159,36 +156,30 @@ const EmployeeList = () => {
   };
 
   const onEditEmployee = (row) => {
-    navigate(`/agency/employees/edit/${row.id}`);
+    navigate(`/agency/employees/${row.id}`);
   };
 
   useEffect(() => {
     getEmp();
   }, [page, search, sortBy, order]);
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setPage(1);
+      setSearch(searchText);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [searchText]);
+
   return (
     <div className="space-y-4">
       <div className="flex items-center flex-col sm:flex-row sm:justify-between gap-3">
-        <h2 className="text-xl">Employees</h2>
+        <h2 className="text-xl font-medium">Employees</h2>
         <div className="flex gap-4 items-center">
-          <InputGroup className="sm:max-w-80">
-            <InputGroupInput
-              value={search}
-              placeholder="Search Employees..."
-              autoComplete="off"
-              type="text"
-              onChange={(e) => {
-                setPage(1);
-                setSearch(e.target.value);
-              }}
-            />
-            <InputGroupAddon>
-              <Search />
-            </InputGroupAddon>
-          </InputGroup>
+          <SearchInput search={searchText} setSearch={setSearchText} />
           <Button asChild>
             <Link
-              to="/agency/employees/create"
+              to="/agency/employees/+"
               className="flex items-center gap-1"
             >
               <Plus /> Create new
