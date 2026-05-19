@@ -28,7 +28,7 @@ const clientFormSchema = z.object({
 const taskFormSchema = z.object({
     name: nameSchema,
     employeeName: z.string().min(1, { message: "Employee selection is required" }),
-    description: z.string().optional(),
+    description: z.string().max(300, { message: "Description cannot exceed 300 characters" }).optional().default(null)
 });
 
 const empFormSchema = z.object({

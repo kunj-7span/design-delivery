@@ -62,7 +62,7 @@ const TaskForm = () => {
                 employeeName: "",
             });
             return;
-            
+
         }
 
         const loadUser = async () => {
@@ -213,7 +213,7 @@ const TaskForm = () => {
                                     render={({ field, fieldState }) => (
                                         <Field data-invalid={fieldState.invalid}>
                                             <FieldLabel htmlFor="form-task-description">
-                                                Description
+                                                Description(optional)
                                             </FieldLabel>
                                             <InputGroup >
                                                 <InputGroupTextarea
@@ -223,10 +223,11 @@ const TaskForm = () => {
                                                     rows={6}
                                                     className="min-h-10 resize-none"
                                                     aria-invalid={fieldState.invalid}
+                                                    maxLength={300}
                                                 />
                                                 <InputGroupAddon align="block-end">
                                                     <InputGroupText className="tabular-nums">
-                                                        {field.value?.length}/100 characters
+                                                        {field.value?.length || 0}/300 characters
                                                     </InputGroupText>
                                                 </InputGroupAddon>
                                             </InputGroup>
